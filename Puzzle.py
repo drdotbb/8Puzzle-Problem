@@ -1,4 +1,3 @@
-
 import sys
 from collections import deque
 
@@ -189,9 +188,42 @@ class EightPuzzle(Problem):
         return inversion % 2 == 0
 
     def h(self, node):
-        """ Return the heuristic value for a given state. Default heuristic function used is 
+        """ Return the heuristic value for a given state. Default heuristic function used is
         h(n) = number of misplaced tiles """
 
         return sum(s != g for (s, g) in zip(node.state, self.goal))
 
 
+def make_rand_8puzzle():
+    while True:
+        seq = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+        random.shuffle(seq)
+
+        puzz = EightPuzzle(tuple(seq), )
+
+        if puzz.check_solvability(seq) is True:
+            break
+
+    print(seq)
+    # print("successful!")
+    return puzz
+
+
+def user_input():
+    initial_state = tuple(int(x) for x in input("enter the values: ").split())
+    l = len(initial_state)
+    if not l == 0:
+        puzz = EightPuzzle(initial_state)
+
+        return puzz, initial_state
+
+
+
+    else:
+        puzz = make_rand_8puzzle()
+
+    return puzz
+
+
+puzzle, state = user_input()
+print(puzzle.find_blank_square(state))
