@@ -227,3 +227,4 @@ def user_input():
 
 puzzle, state = user_input()
 print(puzzle.find_blank_square(state))
+print('kir')
