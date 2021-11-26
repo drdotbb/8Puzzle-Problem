@@ -194,6 +194,38 @@ class EightPuzzle(Problem):
         return sum(s != g for (s, g) in zip(node.state, self.goal))
 
 
+def a_star(problem, h=None, display=None):
+    """Search the nodes with the lowest f scores first.
+            You specify the function f(node) that you want to minimize; for example,
+            if f is a heuristic estimate to the goal, then we have greedy best
+            first search; if f is node.depth then we have breadth-first search.
+            There is a subtlety: the line "f = memoize(f, 'f')" means that the f
+            values will be cached on the nodes as they are computed. So after doing
+            a best first search you can examine the f values of the path returned."""
+    f = h
+    node = Node(problem.initial)
+    frontier = PriorityQueue('min', f)
+    frontier.append(node)
+    explored = set()
+    while frontier:
+        node = frontier.pop()
+        if problem.goal_test(node.state):
+            if display:
+                print(len(explored), "paths have been expanded and", len(frontier), "paths remain in the frontier")
+            return node
+        explored.add(node.state)
+        if problem.goal_test(node.state):
+            return node.state
+        for child in node.expand(problem):
+            if child.state not in explored and child not in frontier:
+                frontier.append(child)
+            elif child in frontier:
+                if f(child) < frontier[child]:
+                    del frontier[child]
+                    frontier.append(child)
+    return None
+
+
 def make_rand_8puzzle():
     while True:
         seq = [0, 1, 2, 3, 4, 5, 6, 7, 8]
@@ -214,16 +246,17 @@ def user_input():
     l = len(initial_state)
     if not l == 0:
         puzz = EightPuzzle(initial_state)
-
-        return puzz, initial_state
-
-
-
+        # return puzz, initial_state
     else:
         puzz = make_rand_8puzzle()
 
     return puzz
 
 
-puzzle, state = user_input()
-print(puzzle.find_blank_square(state))
+puzzle = user_input()
+# print(puzzle.find_blank_square(state))
+state = a_star(puzzle, puzzle.h)
+if state is None:
+    print("can't find solution")
+else:
+    print(state)
