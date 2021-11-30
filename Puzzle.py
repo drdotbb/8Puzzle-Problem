@@ -51,7 +51,10 @@ class Problem:
     def value(self, state):
         """For optimization problems, each state has a value. Hill Climbing
         and related algorithms try to maximize this value."""
-        raise NotImplementedError
+        value = 9
+        value = value - sum(s != g for (s, g) in zip(state, self.goal))
+        return value
+        # raise NotImplementedError
 
 
 # ______________________________________________________________________________
@@ -210,20 +213,75 @@ def make_rand_8puzzle():
 
 
 def user_input():
+    # 1 2 3 4 5 6 7 0 8
+    # 1 0 2 3 4 5 6 7 8
     initial_state = tuple(int(x) for x in input("enter the values: ").split())
     l = len(initial_state)
     if not l == 0:
         puzz = EightPuzzle(initial_state)
-
         return puzz, initial_state
-
-
-
     else:
         puzz = make_rand_8puzzle()
 
     return puzz
 
+def hill_climbing(problem):
+    # simple hill climbing
+    expanded_states = 0
+    current = Node(problem.initial)
+    while True:
+        neighbors = current.expand(problem)
+        if not neighbors:
+            break
+        neighbor = argmax_random_tie(neighbors, key=lambda node: problem.value(node.state))
+        expanded_states = expanded_states + 1
+        if problem.value(neighbor.state) <= problem.value(current.state):
+            break
+        current = neighbor
+    print("Expanded: ", expanded_states)
+    return current.state
+
+def hill_climbing_random_restart(problem):
+    #  1 2 3 4 5 0 6 7 8
+    # random restart hill climbing
+    expanded_states = 0
+    limit = 10000
+
+    current = Node(problem.initial)
+    first_time = True
+    while limit >= 0:
+        limit = limit - 1
+
+        if not first_time:
+            state = current.state
+            l = list(state)
+            random.shuffle(l)
+            current.state = tuple(l)
+        else:
+            first_time = False
+
+        state, expanded_states_tmp = hill_climbing_random_restart_helper(problem, current)
+        expanded_states = expanded_states + expanded_states_tmp
+        if problem.goal_test(state):
+            break
+
+    print("Expanded: ", expanded_states)
+    return state
+
+def hill_climbing_random_restart_helper(problem, current):
+    expanded_states = 0
+    while (True):
+        neighbors = current.expand(problem)
+        if not neighbors:
+            break
+        neighbor = argmax_random_tie(neighbors, key=lambda node: problem.value(node.state))
+        expanded_states = expanded_states + 1
+        if problem.value(neighbor.state) <= problem.value(current.state):
+            break
+        current = neighbor
+    return current.state, expanded_states
 
 puzzle, state = user_input()
-print(puzzle.find_blank_square(state))
+# print(puzzle.find_blank_square(state))
+# print(hill_climbing(puzzle))
+print(hill_climbing_random_restart(puzzle))
