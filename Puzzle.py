@@ -1,3 +1,4 @@
+import math
 import sys
 from collections import deque
 
@@ -242,7 +243,7 @@ def hill_climbing(problem):
     return current.state
 
 def hill_climbing_random_restart(problem):
-    #  1 2 3 4 5 0 6 7 8
+    # 1 2 3 4 5 0 6 7 8
     # random restart hill climbing
     expanded_states = 0
     limit = 10000
@@ -269,6 +270,7 @@ def hill_climbing_random_restart(problem):
     return state
 
 def hill_climbing_random_restart_helper(problem, current):
+    # helper of random restart hill climbing
     expanded_states = 0
     while (True):
         neighbors = current.expand(problem)
@@ -281,7 +283,74 @@ def hill_climbing_random_restart_helper(problem, current):
         current = neighbor
     return current.state, expanded_states
 
+def hill_climbing_simulated_annealing(problem):
+    # not complete
+    # 1 2 3 4 5 0 6 7 8
+    # simulated annealing hill climbing
+    # https://medium.com/swlh/how-to-implement-simulated-annealing-algorithm-in-python-ab196c2f56a0
+    expanded_states = 0
+    initial_temp = 90
+    final_temp = .1
+    alpha = 0.01
+    current_temp = initial_temp
+    current = Node(problem.initial)
+
+    while current_temp > final_temp:
+        neighbors = current.expand(problem)
+        if not neighbors:
+            break
+        index = random.randint(0, len(neighbors) - 1)
+        neighbor = neighbors[index]
+        expanded_states = expanded_states + 1
+        delta_cost = problem.value(neighbor.state) - problem.value(current.state)
+        if delta_cost > 0:
+            current = neighbor
+            if problem.goal_test(current.state):
+                break
+        elif random.uniform(0, 1) <= math.exp(delta_cost / current_temp):
+            current = neighbor
+        current_temp -= alpha
+
+    print("Expanded: ", expanded_states)
+    return current
+
+def local_beam(problem):
+    # https://en.wikipedia.org/wiki/Beam_search
+    # not complete, not optimal
+    # 1 2 3 4 5 0 6 7 8
+    # local beam
+    k = 10
+    expanded_states = 0
+    current = Node(problem.initial)
+    k_list = []
+    for i in range(k):
+        state = current.state
+        l = list(state)
+        random.shuffle(l)
+        current.state = tuple(l)
+        k_list.append(current)
+
+    while True:
+        for random_state in k_list:
+            neighbors = random_state.expand(problem)
+            if not neighbors:
+                break
+            neighbor = argmax_random_tie(neighbors, key=lambda node: problem.value(node.state))
+            expanded_states = expanded_states + 1
+            if problem.goal_test(neighbor.state):
+                current = neighbor
+                break
+            k_list.pop(0)
+            k_list.append(neighbor)
+
+    print("Expanded: ", expanded_states)
+    return current
+
+
 puzzle, state = user_input()
 # print(puzzle.find_blank_square(state))
 # print(hill_climbing(puzzle))
-print(hill_climbing_random_restart(puzzle))
+# print(hill_climbing_random_restart(puzzle))
+# print(hill_climbing_simulated_annealing(puzzle))
+print(local_beam(puzzle))
+
