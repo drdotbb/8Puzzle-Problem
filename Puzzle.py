@@ -227,7 +227,7 @@ def user_input():
     return puzz
 
 def hill_climbing(problem):
-    # simple hill climbing
+    # steepest-ascent hill climbing
     expanded_states = 0
     current = Node(problem.initial)
     while True:
