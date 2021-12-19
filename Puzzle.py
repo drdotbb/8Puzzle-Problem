@@ -2,6 +2,11 @@ import math
 import sys
 from collections import deque
 
+from search import *
+from numpy import matrix
+import array as arr
+import random
+import time
 from utils import *
 
 
@@ -56,6 +61,7 @@ class Problem:
         value = value - sum(s != g for (s, g) in zip(state, self.goal))
         return value
         # raise NotImplementedError
+
 
 
 # ______________________________________________________________________________
@@ -197,6 +203,69 @@ class EightPuzzle(Problem):
 
         return sum(s != g for (s, g) in zip(node.state, self.goal))
 
+
+    def manhattan(self, node):
+        x1, y1 = 1, 1
+        array2d = [list() for f in range(9)]
+        result = 0
+        for i in range(9):
+            array2d[i].append([x1, y1])
+            x1 += 1
+            if x1 % 3 == 1:
+                x1 //= 3
+                y1 += 1
+
+        for j in range(9):
+            m, n = 0, 0
+            if node.state[j] == 0:
+                continue
+
+            n = array2d[node.state[j] - 1][0][0] - array2d[self.goal[j] - 1][0][0]
+            m = array2d[node.state[j] - 1][0][1] - array2d[self.goal[j] - 1][0][1]
+            result += abs(n) + abs(m)
+
+        return result
+
+    def gaschnig(self, node):
+        result = 0
+        puzz = node.state
+        puzz = list(puzz)
+        while True:
+            i = 0
+
+            for b in range(9):
+                # print(self.initial[b])
+                if puzz[b] == 0:
+                    i = b
+                    break
+
+            if not puzz[i] == self.goal[i]:
+                for j in range(9):
+                    if puzz[j] == self.goal[i]:
+                        temp = puzz[j]
+                        puzz[j] = puzz[i]
+                        puzz[i] = temp
+                        result += 1
+                        break
+            else:
+                for z in range(9):
+                    if not puzz[z] == self.goal[z]:
+                        temp = puzz[z]
+                        puzz[z] = puzz[i]
+                        puzz[i] = temp
+                        result += 1
+                        break
+            p = 0
+            for x in range(9):
+                if puzz[x] == self.goal[x]:
+                    p += 1
+            if p == 9:
+                # display(puzz)
+                break
+
+        # print(result)
+        return result
+
 class SixteenPuzzle(Problem):
     """ The problem of sliding tiles numbered from 1 to 15 on a 4x4 board, where one of the
     squares is a blank. A state is represented as a tuple of length 16, where  element at
@@ -266,6 +335,68 @@ class SixteenPuzzle(Problem):
 
         return sum(s != g for (s, g) in zip(node.state, self.goal))
 
+    def manhattan(self, node):
+        x1, y1 = 1, 1
+        array2d = [list() for f in range(16)]
+        result = 0
+        for i in range(16):
+            array2d[i].append([x1, y1])
+            x1 += 1
+            if x1 % 4 == 1:
+                x1 //= 4
+                y1 += 1
+
+        for j in range(16):
+            m, n = 0, 0
+            if node.state[j] == 0:
+                continue
+
+            n = array2d[node.state[j] - 1][0][0] - array2d[self.goal[j] - 1][0][0]
+            m = array2d[node.state[j] - 1][0][1] - array2d[self.goal[j] - 1][0][1]
+            result += abs(n) + abs(m)
+
+        return result
+
+    def gaschnig(self, node):
+        result = 0
+        puzz = node.state
+        puzz = list(puzz)
+        while True:
+            i = 0
+
+            for b in range(16):
+                # print(self.initial[b])
+                if puzz[b] == 0:
+                    i = b
+                    break
+
+            if not puzz[i] == self.goal[i]:
+                for j in range(16):
+                    if puzz[j] == self.goal[i]:
+                        temp = puzz[j]
+                        puzz[j] = puzz[i]
+                        puzz[i] = temp
+                        result += 1
+                        break
+            else:
+                for z in range(16):
+                    if not puzz[z] == self.goal[z]:
+                        temp = puzz[z]
+                        puzz[z] = puzz[i]
+                        puzz[i] = temp
+                        result += 1
+                        break
+            p = 0
+            for x in range(16):
+                if puzz[x] == self.goal[x]:
+                    p += 1
+            if p == 16:
+                # display(puzz)
+                break
+
+        # print(result)
+        return result
+
 def a_star(problem, h=None, display=None):
     """Search the nodes with the lowest f scores first.
             You specify the function f(node) that you want to minimize; for example,
@@ -298,68 +429,40 @@ def a_star(problem, h=None, display=None):
     return None
 
 
-def manhattan(self, node):
-    x1, y1 = 1, 1
-    array2d = [list() for f in range(9)]
-    result = 0
-    for i in range(9):
-        array2d[i].append([x1, y1])
-        x1 += 1
-        if x1 % 3 == 1:
-            x1 //= 3
-            y1 += 1
-
-    for j in range(9):
-        m, n = 0, 0
-        if node.state[j] == 0:
-            continue
-
-        n = array2d[node.state[j] - 1][0][0] - array2d[self.goal[j] - 1][0][0]
-        m = array2d[node.state[j] - 1][0][1] - array2d[self.goal[j] - 1][0][1]
-        result += abs(n) + abs(m)
-
-    return result
-
-
-def gaschnig(self, node):
-    result = 0
-    puzz = node.state
-    puzz = list(puzz)
-    while True:
-        i = 0
-
-        for b in range(9):
-            # print(self.initial[b])
-            if puzz[b] == 0:
-                i = b
-                break
-
-        if not puzz[i] == self.goal[i]:
-            for j in range(9):
-                if puzz[j] == self.goal[i]:
-                    temp = puzz[j]
-                    puzz[j] = puzz[i]
-                    puzz[i] = temp
-                    result += 1
-                    break
+def cost_limited_astar_search(problem, limit, f):
+    """Cost limited A* search is a depth first search bounded by a predetermined
+    limit on f(n) = g(n)+h(n) of nodes. Only children nodes of parent node with
+    f(n) <= limit are searched. """
+    def recursive_cost_limited_astar_search(node, problem, limit, f):
+        if problem.goal_test(node.state):  #return the node, if it is the goal.
+            return node
+        elif f(node) > limit:  #potential goal nodes beyond the cost limit are not searched.
+            return 'cutoff'
         else:
-            for z in range(9):
-                if not puzz[z] == self.goal[z]:
-                    temp = puzz[z]
-                    puzz[z] = puzz[i]
-                    puzz[i] = temp
-                    result += 1
-                    break
-        p = 0
-        for x in range(9):
-            if puzz[x] == self.goal[x]:
-                p += 1
-        if p == 9:
-            # display(puzz)
-            break
+            cutoff_occurred = False
+            # recusively search in the child nodes
+            for child in node.expand(problem):
+                result = recursive_cost_limited_astar_search(child, problem, limit - 1, f)
+                if result == 'cutoff':
+                    cutoff_occured = True  #indicate there are nodes beyond limit not searched.
+                elif result is not None:  #goal node is found and returned.
+                    return result
 
-    # print(result)
-    return result
+            #if code reaches this point, no result has been found within the cost limit.
+            #'cutoff' indicates there may be goal nodes lying beyond the cost limit.
+            #None indicates there's no solution.
+            return 'cutoff' if cutoff_occurred else None
+
+    # Body of cost_depth_limited_search:
+    return recursive_cost_limited_astar_search(Node(problem.initial), problem, limit, f)
+
+
+def iterative_deepening_astar_search(problem, h=None):
+    """[Section 3.5.3]"""
+    for cost_limit in range(sys.maxsize):
+        result = cost_limited_astar_search(problem, cost_limit, h)
+        if result != 'cutoff':
+            return result
 
 
 def make_rand_8puzzle():
@@ -375,18 +478,37 @@ def make_rand_8puzzle():
     print(seq)
     # print("successful!")
     return puzz
+def make_rand_15puzzle():
+    while True:
+        seq = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+        random.shuffle(seq)
+
+
+        puzz = EightPuzzle(tuple(seq), )
+        if puzz.check_solvability(seq) is True:
+            break
+
+
+
+    print(seq)
+    # print("successful!")
+    return puzz
 
 def user_input():
     # 1 2 3 4 5 6 7 0 8
     # 1 0 2 3 4 5 6 7 8
     initial_state = tuple(int(x) for x in input("enter the values: ").split())
     l = len(initial_state)
-    if not l == 0:
+    if l == 8:
         puzz = EightPuzzle(initial_state)
         return puzz, initial_state
+    elif l==15:
+        puzz =SixteenPuzzle(initial_state)
+        return puzz, initial_state
+
     else:
         puzz = make_rand_8puzzle()
-
+    print(puzz)
     return puzz
 
 def hill_climbing(problem):
@@ -510,10 +632,12 @@ def local_beam(problem):
     return current
 
 
-puzzle, state = user_input()
-# print(puzzle.find_blank_square(state))
+puzzle = user_input()
+#print(puzzle.find_blank_square(state))
 # print(hill_climbing(puzzle))
 # print(hill_climbing_random_restart(puzzle))
 # print(hill_climbing_simulated_annealing(puzzle))
-print(local_beam(puzzle))
+#print(local_beam(puzzle))
+print(a_star(puzzle,h=puzzle.h,display=True))
+print(iterative_deepening_astar_search(puzzle,h=puzzle.h))
 
