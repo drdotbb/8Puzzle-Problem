@@ -488,6 +488,22 @@ def bidirectional_a_star(problem, h=None, display=None):
     return None
 
 
+def astar_search(problem, h=None, display=False):
+    """A* search is best-first graph search with f(n) = g(n)+h(n).
+    You need to specify the h function when you call astar_search, or
+    else in your Problem subclass."""
+    h = memoize(h, 'h')
+    return a_star(problem, lambda n: n.path_cost + h(n), display)
+
+
+def bidirectional_astar_search(problem, h=None, display=False):
+    """A* search is best-first graph search with f(n) = g(n)+h(n).
+    You need to specify the h function when you call astar_search, or
+    else in your Problem subclass."""
+    h = memoize(h, 'h')
+    return bidirectional_a_star(problem, lambda n: n.path_cost + h(n), display)
+
+
 def cost_limited_astar_search(problem, limit, f):
     """Cost limited A* search is a depth first search bounded by a predetermined
     limit on f(n) = g(n)+h(n) of nodes. Only children nodes of parent node with
@@ -649,6 +665,7 @@ def local_beam(problem):
     print("Expanded: ", expanded_states)
     return current
 
+
 def make_rand_8puzzle():
     while True:
         seq = [0, 1, 2, 3, 4, 5, 6, 7, 8]
@@ -669,7 +686,7 @@ def make_rand_15puzzle():
         seq = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
         random.shuffle(seq)
 
-        puzz = EightPuzzle(tuple(seq), )
+        puzz = SixteenPuzzle(tuple(seq), )
         if puzz.check_solvability(seq) is True:
             break
 
@@ -691,8 +708,11 @@ def user_input():
         return puzz, initial_state
 
     else:
-        puzz = make_rand_8puzzle()
-    print(puzz)
+        """
+            Change here for random puzzle
+        """
+        puzz = make_rand_15puzzle()
+    # print(puzz)
     return puzz
 
 
@@ -702,5 +722,6 @@ puzzle = user_input()
 # print(hill_climbing_random_restart(puzzle))
 # print(hill_climbing_simulated_annealing(puzzle))
 # print(local_beam(puzzle))
-print(a_star(puzzle, h=puzzle.h, display=True))
-print(iterative_deepening_astar_search(puzzle, h=puzzle.h))
+# print(a_star(puzzle, h=puzzle.manhattan, display=False))
+print(bidirectional_a_star(puzzle, h=puzzle.manhattan, display=False))
+# print(iterative_deepening_astar_search(puzzle, h=puzzle.manhattan))
