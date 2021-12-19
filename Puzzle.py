@@ -429,6 +429,65 @@ def a_star(problem, h=None, display=None):
     return None
 
 
+def bidirectional_a_star(problem, h=None, display=None):
+    f = h
+    forward_node = Node(problem.initial)
+    backward_node = Node(problem.goal)
+    forward_frontier = PriorityQueue('min', f)
+    backward_frontier = PriorityQueue('min', f)
+    forward_frontier.append(forward_node)
+    backward_frontier.append(backward_node)
+    explored = set()
+    while forward_frontier and backward_frontier:
+        forward_node = forward_frontier.pop()
+        backward_node = backward_frontier.pop()
+        explored.add(forward_node.state)
+        explored.add(backward_node.state)
+
+        # search in priority queue:
+        forward_temp = PriorityQueue('min', f)
+        backward_temp = PriorityQueue('min', f)
+        forward_list = []
+        backward_list = []
+        while forward_frontier:
+            t = forward_frontier.pop()
+            forward_list.append(t)
+            forward_temp.append(t)
+        while backward_frontier:
+            t = backward_frontier.pop()
+            backward_list.append(t)
+            backward_temp.append(t)
+
+        for i in forward_list:
+            for j in backward_list:
+                if i == j:
+                    return problem.goal
+
+        while forward_temp:
+            t = forward_temp.pop()
+            forward_frontier.append(t)
+        while backward_temp:
+            t = backward_temp.pop()
+            backward_frontier.append(t)
+
+        for child in forward_node.expand(problem):
+            if child.state not in explored and child not in forward_frontier:
+                forward_frontier.append(child)
+            elif child in forward_frontier:
+                if f(child) < forward_frontier[child]:
+                    del forward_frontier[child]
+                    forward_frontier.append(child)
+
+        for child in backward_node.expand(problem):
+            if child.state not in explored and child not in backward_frontier:
+                backward_frontier.append(child)
+            elif child in backward_frontier:
+                if f(child) < backward_frontier[child]:
+                    del backward_frontier[child]
+                    backward_frontier.append(child)
+    return None
+
+
 def cost_limited_astar_search(problem, limit, f):
     """Cost limited A* search is a depth first search bounded by a predetermined
     limit on f(n) = g(n)+h(n) of nodes. Only children nodes of parent node with
