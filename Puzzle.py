@@ -711,7 +711,7 @@ def user_input():
         """
             Change here for random puzzle
         """
-        puzz = make_rand_15puzzle()
+        puzz = make_rand_8puzzle()
     # print(puzz)
     return puzz
 
@@ -722,6 +722,6 @@ puzzle = user_input()
 # print(hill_climbing_random_restart(puzzle))
 # print(hill_climbing_simulated_annealing(puzzle))
 # print(local_beam(puzzle))
-print(a_star(puzzle, h=puzzle.manhattan, display=False))
-# print(bidirectional_a_star(puzzle, h=puzzle.manhattan, display=False))
+# print(astar_search(puzzle, h=puzzle.manhattan, display=False))
+# print(bidirectional_astar_search(puzzle, h=puzzle.manhattan, display=False))
 # print(iterative_deepening_astar_search(puzzle, h=puzzle.manhattan))
