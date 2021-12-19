@@ -2,7 +2,7 @@ import math
 import sys
 from collections import deque
 
-from search import *
+# from search import *
 from numpy import matrix
 import array as arr
 import random
@@ -722,6 +722,6 @@ puzzle = user_input()
 # print(hill_climbing_random_restart(puzzle))
 # print(hill_climbing_simulated_annealing(puzzle))
 # print(local_beam(puzzle))
-# print(a_star(puzzle, h=puzzle.manhattan, display=False))
-print(bidirectional_a_star(puzzle, h=puzzle.manhattan, display=False))
+print(a_star(puzzle, h=puzzle.manhattan, display=False))
+# print(bidirectional_a_star(puzzle, h=puzzle.manhattan, display=False))
 # print(iterative_deepening_astar_search(puzzle, h=puzzle.manhattan))
