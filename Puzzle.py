@@ -398,16 +398,8 @@ class SixteenPuzzle(Problem):
 
 
 def a_star(problem, h=None, display=None):
-    """Search the nodes with the lowest f scores first.
-            You specify the function f(node) that you want to minimize; for example,
-            if f is a heuristic estimate to the goal, then we have greedy best
-            first search; if f is node.depth then we have breadth-first search.
-            There is a subtlety: the line "f = memoize(f, 'f')" means that the f
-            values will be cached on the nodes as they are computed. So after doing
-            a best first search you can examine the f values of the path returned."""
-    f = h
     node = Node(problem.initial)
-    frontier = PriorityQueue('min', f)
+    frontier = PriorityQueue('min', h)
     frontier.append(node)
     explored = set()
     while frontier:
@@ -430,11 +422,10 @@ def a_star(problem, h=None, display=None):
 
 
 def bidirectional_a_star(problem, h=None, display=None):
-    f = h
     forward_node = Node(problem.initial)
     backward_node = Node(problem.goal)
-    forward_frontier = PriorityQueue('min', f)
-    backward_frontier = PriorityQueue('min', f)
+    forward_frontier = PriorityQueue('min', h)
+    backward_frontier = PriorityQueue('min', h)
     forward_frontier.append(forward_node)
     backward_frontier.append(backward_node)
     explored = set()
@@ -445,8 +436,8 @@ def bidirectional_a_star(problem, h=None, display=None):
         explored.add(backward_node.state)
 
         # search in priority queue:
-        forward_temp = PriorityQueue('min', f)
-        backward_temp = PriorityQueue('min', f)
+        forward_temp = PriorityQueue('min', h)
+        backward_temp = PriorityQueue('min', h)
         forward_list = []
         backward_list = []
         while forward_frontier:
@@ -489,25 +480,16 @@ def bidirectional_a_star(problem, h=None, display=None):
 
 
 def astar_search(problem, h=None, display=False):
-    """A* search is best-first graph search with f(n) = g(n)+h(n).
-    You need to specify the h function when you call astar_search, or
-    else in your Problem subclass."""
     h = memoize(h, 'h')
     return a_star(problem, lambda n: n.path_cost + h(n), display)
 
 
 def bidirectional_astar_search(problem, h=None, display=False):
-    """A* search is best-first graph search with f(n) = g(n)+h(n).
-    You need to specify the h function when you call astar_search, or
-    else in your Problem subclass."""
     h = memoize(h, 'h')
     return bidirectional_a_star(problem, lambda n: n.path_cost + h(n), display)
 
 
-def cost_limited_astar_search(problem, limit, f):
-    """Cost limited A* search is a depth first search bounded by a predetermined
-    limit on f(n) = g(n)+h(n) of nodes. Only children nodes of parent node with
-    f(n) <= limit are searched. """
+def cost_limited_astar_search(problem, limit, h):
 
     def recursive_cost_limited_astar_search(node, problem, limit, f):
         if problem.goal_test(node.state):  # return the node, if it is the goal.
@@ -520,7 +502,7 @@ def cost_limited_astar_search(problem, limit, f):
             for child in node.expand(problem):
                 result = recursive_cost_limited_astar_search(child, problem, limit - 1, f)
                 if result == 'cutoff':
-                    cutoff_occured = True  # indicate there are nodes beyond limit not searched.
+                    cutoff_occurred = True  # indicate there are nodes beyond limit not searched.
                 elif result is not None:  # goal node is found and returned.
                     return result
 
@@ -530,11 +512,10 @@ def cost_limited_astar_search(problem, limit, f):
             return 'cutoff' if cutoff_occurred else None
 
     # Body of cost_depth_limited_search:
-    return recursive_cost_limited_astar_search(Node(problem.initial), problem, limit, f)
+    return recursive_cost_limited_astar_search(Node(problem.initial), problem, limit, h)
 
 
 def iterative_deepening_astar_search(problem, h=None):
-    """[Section 3.5.3]"""
     for cost_limit in range(sys.maxsize):
         result = cost_limited_astar_search(problem, cost_limit, h)
         if result != 'cutoff':
@@ -712,6 +693,7 @@ def user_input():
             Change here for random puzzle
         """
         puzz = make_rand_8puzzle()
+
     # print(puzz)
     return puzz
 
@@ -723,5 +705,5 @@ puzzle = user_input()
 # print(hill_climbing_simulated_annealing(puzzle))
 # print(local_beam(puzzle))
 # print(astar_search(puzzle, h=puzzle.manhattan, display=False))
+print(iterative_deepening_astar_search(puzzle, h=puzzle.manhattan))
 # print(bidirectional_astar_search(puzzle, h=puzzle.manhattan, display=False))
-# print(iterative_deepening_astar_search(puzzle, h=puzzle.manhattan))
