@@ -750,7 +750,18 @@ def test_Astar():
         puzzles = make_rand_15puzzle()
         k_list.append(puzzles)
 
-
+        print("A* with Manhattan:")
+        tracemalloc.start()  # start memory tracking
+        initial_mem, _ = tracemalloc.get_traced_memory()
+        start_time = time.time()
+        print(astar_search(puzzles, h=puzzles.h, display=True))
+        elapsed_time = time.time() - start_time
+        current_mem, peak_mem = tracemalloc.get_traced_memory()
+        tracemalloc.stop()  # stop memory tracking
+        peak_mem = round(peak_mem / (1024 ** 2), 6)
+        astar_time+=elapsed_time
+        astar_mem=peak_mem
+        print("A*:",elapsed_time,"memory usage:",peak_mem)
 
         tracemalloc.start()  # start memory tracking
         initial_mem, _ = tracemalloc.get_traced_memory()
