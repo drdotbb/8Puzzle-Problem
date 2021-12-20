@@ -1,4 +1,3 @@
-
 import math
 import sys
 from collections import deque
@@ -9,6 +8,7 @@ import array as arr
 import random
 import time
 from utils import *
+from functools import cmp_to_key
 
 
 class Problem:
@@ -399,16 +399,8 @@ class SixteenPuzzle(Problem):
 
 
 def a_star(problem, h=None, display=None):
-    """Search the nodes with the lowest f scores first.
-            You specify the function f(node) that you want to minimize; for example,
-            if f is a heuristic estimate to the goal, then we have greedy best
-            first search; if f is node.depth then we have breadth-first search.
-            There is a subtlety: the line "f = memoize(f, 'f')" means that the f
-            values will be cached on the nodes as they are computed. So after doing
-            a best first search you can examine the f values of the path returned."""
-    f = h
     node = Node(problem.initial)
-    frontier = PriorityQueue('min', f)
+    frontier = PriorityQueue('min', h)
     frontier.append(node)
     explored = set()
     while frontier:
@@ -431,11 +423,10 @@ def a_star(problem, h=None, display=None):
 
 
 def bidirectional_a_star(problem, h=None, display=None):
-    f = h
     forward_node = Node(problem.initial)
     backward_node = Node(problem.goal)
-    forward_frontier = PriorityQueue('min', f)
-    backward_frontier = PriorityQueue('min', f)
+    forward_frontier = PriorityQueue('min', h)
+    backward_frontier = PriorityQueue('min', h)
     forward_frontier.append(forward_node)
     backward_frontier.append(backward_node)
     explored = set()
@@ -446,8 +437,8 @@ def bidirectional_a_star(problem, h=None, display=None):
         explored.add(backward_node.state)
 
         # search in priority queue:
-        forward_temp = PriorityQueue('min', f)
-        backward_temp = PriorityQueue('min', f)
+        forward_temp = PriorityQueue('min', h)
+        backward_temp = PriorityQueue('min', h)
         forward_list = []
         backward_list = []
         while forward_frontier:
@@ -490,25 +481,16 @@ def bidirectional_a_star(problem, h=None, display=None):
 
 
 def astar_search(problem, h=None, display=False):
-    """A* search is best-first graph search with f(n) = g(n)+h(n).
-    You need to specify the h function when you call astar_search, or
-    else in your Problem subclass."""
     h = memoize(h, 'h')
     return a_star(problem, lambda n: n.path_cost + h(n), display)
 
 
 def bidirectional_astar_search(problem, h=None, display=False):
-    """A* search is best-first graph search with f(n) = g(n)+h(n).
-    You need to specify the h function when you call astar_search, or
-    else in your Problem subclass."""
     h = memoize(h, 'h')
     return bidirectional_a_star(problem, lambda n: n.path_cost + h(n), display)
 
 
-def cost_limited_astar_search(problem, limit, f):
-    """Cost limited A* search is a depth first search bounded by a predetermined
-    limit on f(n) = g(n)+h(n) of nodes. Only children nodes of parent node with
-    f(n) <= limit are searched. """
+def cost_limited_astar_search(problem, limit, h):
 
     def recursive_cost_limited_astar_search(node, problem, limit, f):
         if problem.goal_test(node.state):  # return the node, if it is the goal.
@@ -531,11 +513,10 @@ def cost_limited_astar_search(problem, limit, f):
             return 'cutoff' if cutoff_occurred else None
 
     # Body of cost_depth_limited_search:
-    return recursive_cost_limited_astar_search(Node(problem.initial), problem, limit, f)
+    return recursive_cost_limited_astar_search(Node(problem.initial), problem, limit, h)
 
 
 def iterative_deepening_astar_search(problem, h=None):
-
     for cost_limit in range(sys.maxsize):
         result = cost_limited_astar_search(problem, cost_limit, h)
         if result != 'cutoff':
@@ -543,7 +524,7 @@ def iterative_deepening_astar_search(problem, h=None):
 
 
 def hill_climbing(problem):
-    # simple hill climbing
+    # steepest-ascent hill climbing
     expanded_states = 0
     current = Node(problem.initial)
     while True:
@@ -555,8 +536,8 @@ def hill_climbing(problem):
         if problem.value(neighbor.state) <= problem.value(current.state):
             break
         current = neighbor
-    print("Expanded: ", expanded_states)
-    return current.state
+    # print("Expanded: ", expanded_states)
+    return current.state, expanded_states
 
 
 def hill_climbing_random_restart(problem):
@@ -583,8 +564,8 @@ def hill_climbing_random_restart(problem):
         if problem.goal_test(state):
             break
 
-    print("Expanded: ", expanded_states)
-    return state
+    # print("Expanded: ", expanded_states)
+    return state, expanded_states
 
 
 def hill_climbing_random_restart_helper(problem, current):
@@ -610,7 +591,7 @@ def hill_climbing_simulated_annealing(problem):
     expanded_states = 0
     initial_temp = 90
     final_temp = .1
-    alpha = 0.01
+    alpha = 0.00001
     current_temp = initial_temp
     current = Node(problem.initial)
 
@@ -630,9 +611,16 @@ def hill_climbing_simulated_annealing(problem):
             current = neighbor
         current_temp -= alpha
 
-    print("Expanded: ", expanded_states)
-    return current
+    # print("Expanded: ", expanded_states)
+    return current, expanded_states
 
+def compare_value(state):
+    value = 9
+    value = value - sum(s != g for (s, g) in zip(state, (1, 2, 3, 4, 5, 6, 7, 8, 0)))
+    return value
+
+def compare(item1, item2):
+    return compare_value(item1.state) - compare_value(item2.state)
 
 def local_beam(problem):
     # https://en.wikipedia.org/wiki/Beam_search
@@ -641,14 +629,14 @@ def local_beam(problem):
     # local beam
     k = 10
     expanded_states = 0
-    current = Node(problem.initial)
     k_list = []
     for i in range(k):
-        state = current.state
-        l = list(state)
-        random.shuffle(l)
-        current.state = tuple(l)
+        puzzle = make_rand_8puzzle()
+        current = Node(puzzle.initial)
         k_list.append(current)
+
+    sorted(k_list, key=cmp_to_key(compare))
+    # k_list.sort(key=compare)
 
     while True:
         for random_state in k_list:
@@ -660,11 +648,17 @@ def local_beam(problem):
             if problem.goal_test(neighbor.state):
                 current = neighbor
                 break
-            k_list.pop(0)
-            k_list.append(neighbor)
+            if (problem.value(k_list[0].state) < problem.value(neighbor.state)):
+                k_list.pop(0)
+                k_list.append(neighbor)
+            sorted(k_list, key=cmp_to_key(compare))
+            # print("----")
+            # print(k_list)
+            # if expanded_states > 40000:
+            #     print("Expanded: ", expanded_states)
 
-    print("Expanded: ", expanded_states)
-    return current
+    # print("Expanded: ", expanded_states)
+    return current, expanded_states
 
 
 def make_rand_8puzzle():
@@ -695,6 +689,51 @@ def make_rand_15puzzle():
     # print("successful!")
     return puzz
 
+def test_hill_climbing():
+    n = 10
+    k_list = []
+    for i in range(n):
+        puzzles = make_rand_8puzzle()
+        # puzzles = make_rand_15puzzle()
+        k_list.append(puzzles)
+
+    success_hill_climbing = 0
+    expanded_states_hill_climbing = 0
+
+    success_hill_climbing_random_restart = 0
+    expanded_states_hill_climbing_random_restart = 0
+
+    success_hill_climbing_simulated_annealing = 0
+    expanded_states_hill_climbing_simulated_annealing = 0
+
+    for puzzle in k_list:
+        state, expanded_states = hill_climbing(puzzle)
+        # print(state)
+        if (puzzle.goal_test(state)):
+            success_hill_climbing += 1
+        expanded_states_hill_climbing += expanded_states
+        print("finished 1")
+
+        # state, expanded_states = hill_climbing_random_restart(puzzle)
+        # success_hill_climbing_random_restart += 1
+        # expanded_states_hill_climbing_random_restart += expanded_states
+        # print("finished 2")
+        #
+        # state, expanded_states = hill_climbing_simulated_annealing(puzzle)
+        # print(state)
+        # success_hill_climbing_simulated_annealing += 1
+        # expanded_states_hill_climbing_simulated_annealing += expanded_states
+        # print("finished 3")
+
+
+    print("hill climbing success: ", success_hill_climbing)
+    print("hill climbing expanded: ", expanded_states_hill_climbing/n)
+
+    print("random_restart success: ", success_hill_climbing_random_restart)
+    print("random_restart expanded: ", expanded_states_hill_climbing_random_restart/n)
+
+    print("simulated_annealing success: ", success_hill_climbing_simulated_annealing)
+    print("simulated_annealing expanded: ", expanded_states_hill_climbing_simulated_annealing/n)
 
 def user_input():
     # 1 2 3 4 5 6 7 0 8
@@ -713,32 +752,23 @@ def user_input():
             Change here for random puzzle
         """
         puzz = make_rand_8puzzle()
+        # test_hill_climbing()
     # print(puzz)
     return puzz
 
 
 puzzle = user_input()
-#print(puzzle.find_blank_square(state))
-print("hill climbing:")
-start_time = time.time()
-print(hill_climbing(puzzle))
-elapsed_time = time.time() - start_time
-print("Running Time:",float(elapsed_time),"Seconds\n")
-print("hill climbing random restart:")
-start_time = time.time()
-print(hill_climbing_random_restart(puzzle))
-elapsed_time = time.time() - start_time
-print("Running Time:",float(elapsed_time),"Seconds\n")
+# print(puzzle.find_blank_square(state))
 
-print("hill climbing simulated annealing:")
-start_time = time.time()
-print(hill_climbing_simulated_annealing(puzzle))
-elapsed_time = time.time() - start_time
-print("Running Time:",float(elapsed_time),"Seconds\n")
+# state, expanded = hill_climbing(puzzle)
+# print(state)
+# state, expanded = hill_climbing_random_restart(puzzle)
+# print(state)
+# state, expanded = hill_climbing_simulated_annealing(puzzle)
+# print(state)
+# state, expanded = local_beam(puzzle)
+# print(state)
 
-
-
-#print(a_star(puzzle,h=puzzle.h,display=True))
-#print(iterative_deepening_astar_search(puzzle,h=puzzle.h))
-
-
+# print(astar_search(puzzle, h=puzzle.manhattan, display=False))
+print(iterative_deepening_astar_search(puzzle, h=puzzle.manhattan))
+# print(bidirectional_astar_search(puzzle, h=puzzle.manhattan, display=False))

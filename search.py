@@ -1,6 +1,5 @@
 """
 Search (Chapters 3-4)
-
 The way to use this code is to subclass Problem to create a class of problems,
 then create problem instances and solve them with calls to the various search
 functions.
@@ -421,7 +420,7 @@ def astar_search(problem, h=None, display=False):
 
 
 # ______________________________________________________________________________
-# A* heuristics 
+# A* heuristics
 
 class EightPuzzle(Problem):
     """ The problem of sliding tiles numbered from 1 to 8 on a 3x3 board, where one of the
@@ -487,7 +486,7 @@ class EightPuzzle(Problem):
         return inversion % 2 == 0
 
     def h(self, node):
-        """ Return the heuristic value for a given state. Default heuristic function used is 
+        """ Return the heuristic value for a given state. Default heuristic function used is
         h(n) = number of misplaced tiles """
 
         return sum(s != g for (s, g) in zip(node.state, self.goal))
@@ -673,7 +672,7 @@ def simulated_annealing(problem, schedule=exp_schedule()):
 
 
 def simulated_annealing_full(problem, schedule=exp_schedule()):
-    """ This version returns all the states encountered in reaching 
+    """ This version returns all the states encountered in reaching
     the goal state."""
     states = []
     current = Node(problem.initial)
@@ -857,7 +856,6 @@ class LRTAStarAgent:
     """ [Figure 4.24]
     Abstract class for LRTA*-Agent. A problem needs to be
     provided which is an instance of a subclass of Problem Class.
-
     Takes a OnlineSearchProblem [Figure 4.23] as a problem.
     """
 
@@ -1219,7 +1217,6 @@ class GraphProblemStochastic(GraphProblem):
     """
     A version of GraphProblem where an action can lead to
     nondeterministic output i.e. multiple possible states.
-
     Define the graph as dict(A = dict(Action = [[<Result 1>, <Result 2>, ...], <cost>], ...), ...)
     A the dictionary format is different, make sure the graph is created as a directed graph.
     """
