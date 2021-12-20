@@ -754,7 +754,7 @@ def test_Astar():
         tracemalloc.start()  # start memory tracking
         initial_mem, _ = tracemalloc.get_traced_memory()
         start_time = time.time()
-        print(astar_search(puzzles, h=puzzles.h, display=True))
+        print(astar_search(puzzles, h=puzzles.manhattan, display=True))
         elapsed_time = time.time() - start_time
         current_mem, peak_mem = tracemalloc.get_traced_memory()
         tracemalloc.stop()  # stop memory tracking
@@ -766,7 +766,7 @@ def test_Astar():
         tracemalloc.start()  # start memory tracking
         initial_mem, _ = tracemalloc.get_traced_memory()
         start_time = time.time()
-        print(len(Node.solution(iterative_deepening_astar_search(puzzles, h=puzzles.h))))
+        print(len(Node.solution(iterative_deepening_astar_search(puzzles, h=puzzles.manhattan))))
         current_mem, peak_mem = tracemalloc.get_traced_memory()
         tracemalloc.stop()  # stop memory tracking
         peak_mem = round(peak_mem / (1024 ** 2), 6)
@@ -778,7 +778,7 @@ def test_Astar():
 
 
         start_time = time.time()
-        print(bidirectional_astar_search(puzzles, h=puzzles.h, display=True))
+        print(bidirectional_astar_search(puzzles, h=puzzles.manhattan, display=True))
         elapsed_time = time.time() - start_time
         bi_mem+=peak_mem
         bi_time+=elapsed_time
