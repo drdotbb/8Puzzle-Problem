@@ -8,6 +8,7 @@ import array as arr
 import random
 import time
 from utils import *
+from functools import cmp_to_key
 
 
 class Problem:
@@ -542,7 +543,7 @@ def iterative_deepening_astar_search(problem, h=None):
 
 
 def hill_climbing(problem):
-    # simple hill climbing
+    # steepest-ascent hill climbing
     expanded_states = 0
     current = Node(problem.initial)
     while True:
@@ -554,8 +555,8 @@ def hill_climbing(problem):
         if problem.value(neighbor.state) <= problem.value(current.state):
             break
         current = neighbor
-    print("Expanded: ", expanded_states)
-    return current.state
+    # print("Expanded: ", expanded_states)
+    return current.state, expanded_states
 
 
 def hill_climbing_random_restart(problem):
@@ -582,8 +583,8 @@ def hill_climbing_random_restart(problem):
         if problem.goal_test(state):
             break
 
-    print("Expanded: ", expanded_states)
-    return state
+    # print("Expanded: ", expanded_states)
+    return state, expanded_states
 
 
 def hill_climbing_random_restart_helper(problem, current):
@@ -609,7 +610,7 @@ def hill_climbing_simulated_annealing(problem):
     expanded_states = 0
     initial_temp = 90
     final_temp = .1
-    alpha = 0.01
+    alpha = 0.00001
     current_temp = initial_temp
     current = Node(problem.initial)
 
@@ -629,9 +630,16 @@ def hill_climbing_simulated_annealing(problem):
             current = neighbor
         current_temp -= alpha
 
-    print("Expanded: ", expanded_states)
-    return current
+    # print("Expanded: ", expanded_states)
+    return current, expanded_states
 
+def compare_value(state):
+    value = 9
+    value = value - sum(s != g for (s, g) in zip(state, (1, 2, 3, 4, 5, 6, 7, 8, 0)))
+    return value
+
+def compare(item1, item2):
+    return compare_value(item1.state) - compare_value(item2.state)
 
 def local_beam(problem):
     # https://en.wikipedia.org/wiki/Beam_search
@@ -640,14 +648,14 @@ def local_beam(problem):
     # local beam
     k = 10
     expanded_states = 0
-    current = Node(problem.initial)
     k_list = []
     for i in range(k):
-        state = current.state
-        l = list(state)
-        random.shuffle(l)
-        current.state = tuple(l)
+        puzzle = make_rand_8puzzle()
+        current = Node(puzzle.initial)
         k_list.append(current)
+
+    sorted(k_list, key=cmp_to_key(compare))
+    # k_list.sort(key=compare)
 
     while True:
         for random_state in k_list:
@@ -659,11 +667,17 @@ def local_beam(problem):
             if problem.goal_test(neighbor.state):
                 current = neighbor
                 break
-            k_list.pop(0)
-            k_list.append(neighbor)
+            if (problem.value(k_list[0].state) < problem.value(neighbor.state)):
+                k_list.pop(0)
+                k_list.append(neighbor)
+            sorted(k_list, key=cmp_to_key(compare))
+            # print("----")
+            # print(k_list)
+            # if expanded_states > 40000:
+            #     print("Expanded: ", expanded_states)
 
-    print("Expanded: ", expanded_states)
-    return current
+    # print("Expanded: ", expanded_states)
+    return current, expanded_states
 
 
 def make_rand_8puzzle():
@@ -694,6 +708,51 @@ def make_rand_15puzzle():
     # print("successful!")
     return puzz
 
+def test_hill_climbing():
+    n = 10
+    k_list = []
+    for i in range(n):
+        puzzles = make_rand_8puzzle()
+        # puzzles = make_rand_15puzzle()
+        k_list.append(puzzles)
+
+    success_hill_climbing = 0
+    expanded_states_hill_climbing = 0
+
+    success_hill_climbing_random_restart = 0
+    expanded_states_hill_climbing_random_restart = 0
+
+    success_hill_climbing_simulated_annealing = 0
+    expanded_states_hill_climbing_simulated_annealing = 0
+
+    for puzzle in k_list:
+        state, expanded_states = hill_climbing(puzzle)
+        # print(state)
+        if (puzzle.goal_test(state)):
+            success_hill_climbing += 1
+        expanded_states_hill_climbing += expanded_states
+        print("finished 1")
+
+        # state, expanded_states = hill_climbing_random_restart(puzzle)
+        # success_hill_climbing_random_restart += 1
+        # expanded_states_hill_climbing_random_restart += expanded_states
+        # print("finished 2")
+        #
+        # state, expanded_states = hill_climbing_simulated_annealing(puzzle)
+        # print(state)
+        # success_hill_climbing_simulated_annealing += 1
+        # expanded_states_hill_climbing_simulated_annealing += expanded_states
+        # print("finished 3")
+
+
+    print("hill climbing success: ", success_hill_climbing)
+    print("hill climbing expanded: ", expanded_states_hill_climbing/n)
+
+    print("random_restart success: ", success_hill_climbing_random_restart)
+    print("random_restart expanded: ", expanded_states_hill_climbing_random_restart/n)
+
+    print("simulated_annealing success: ", success_hill_climbing_simulated_annealing)
+    print("simulated_annealing expanded: ", expanded_states_hill_climbing_simulated_annealing/n)
 
 def user_input():
     # 1 2 3 4 5 6 7 0 8
@@ -712,16 +771,23 @@ def user_input():
             Change here for random puzzle
         """
         puzz = make_rand_8puzzle()
+        # test_hill_climbing()
     # print(puzz)
     return puzz
 
 
 puzzle = user_input()
 # print(puzzle.find_blank_square(state))
-# print(hill_climbing(puzzle))
-# print(hill_climbing_random_restart(puzzle))
-# print(hill_climbing_simulated_annealing(puzzle))
-# print(local_beam(puzzle))
+
+# state, expanded = hill_climbing(puzzle)
+# print(state)
+# state, expanded = hill_climbing_random_restart(puzzle)
+# print(state)
+# state, expanded = hill_climbing_simulated_annealing(puzzle)
+# print(state)
+# state, expanded = local_beam(puzzle)
+# print(state)
+
 # print(astar_search(puzzle, h=puzzle.manhattan, display=False))
 # print(bidirectional_astar_search(puzzle, h=puzzle.manhattan, display=False))
 # print(iterative_deepening_astar_search(puzzle, h=puzzle.manhattan))
