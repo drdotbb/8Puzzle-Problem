@@ -521,7 +521,7 @@ def cost_limited_astar_search(problem, limit, f):
             for child in node.expand(problem):
                 result = recursive_cost_limited_astar_search(child, problem, limit - 1, f)
                 if result == 'cutoff':
-                    cutoff_occured = True  # indicate there are nodes beyond limit not searched.
+                    cutoff_occurred = True  # indicate there are nodes beyond limit not searched.
                 elif result is not None:  # goal node is found and returned.
                     return result
 
@@ -535,7 +535,7 @@ def cost_limited_astar_search(problem, limit, f):
 
 
 def iterative_deepening_astar_search(problem, h=None):
-    """[Section 3.5.3]"""
+
     for cost_limit in range(sys.maxsize):
         result = cost_limited_astar_search(problem, cost_limit, h)
         if result != 'cutoff':
