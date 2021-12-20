@@ -1,8 +1,8 @@
 import math
 import sys
 from collections import deque
-
-# from search import *
+import tracemalloc
+from search import *
 from numpy import matrix
 import array as arr
 import random
@@ -416,7 +416,7 @@ def a_star(problem, h=None, display=None):
             if child.state not in explored and child not in frontier:
                 frontier.append(child)
             elif child in frontier:
-                if f(child) < frontier[child]:
+                if h(child) < frontier[child]:
                     del frontier[child]
                     frontier.append(child)
     return None
@@ -466,7 +466,7 @@ def bidirectional_a_star(problem, h=None, display=None):
             if child.state not in explored and child not in forward_frontier:
                 forward_frontier.append(child)
             elif child in forward_frontier:
-                if f(child) < forward_frontier[child]:
+                if h(child) < forward_frontier[child]:
                     del forward_frontier[child]
                     forward_frontier.append(child)
 
@@ -474,7 +474,7 @@ def bidirectional_a_star(problem, h=None, display=None):
             if child.state not in explored and child not in backward_frontier:
                 backward_frontier.append(child)
             elif child in backward_frontier:
-                if f(child) < backward_frontier[child]:
+                if h(child) < backward_frontier[child]:
                     del backward_frontier[child]
                     backward_frontier.append(child)
     return None
@@ -735,6 +735,50 @@ def test_hill_climbing():
     print("simulated_annealing success: ", success_hill_climbing_simulated_annealing)
     print("simulated_annealing expanded: ", expanded_states_hill_climbing_simulated_annealing/n)
 
+
+def test_Astar():
+    n = 10
+    k_list = []
+    astar_time=0
+    astar_mem=0
+    ida_time=0
+    ida_mem=0
+    bi_time=0
+    bi_mem=0
+    for i in range(n):
+        #puzzles = make_rand_8puzzle()
+        puzzles = make_rand_15puzzle()
+        k_list.append(puzzles)
+
+
+
+        tracemalloc.start()  # start memory tracking
+        initial_mem, _ = tracemalloc.get_traced_memory()
+        start_time = time.time()
+        print(len(Node.solution(iterative_deepening_astar_search(puzzles, h=puzzles.h))))
+        current_mem, peak_mem = tracemalloc.get_traced_memory()
+        tracemalloc.stop()  # stop memory tracking
+        peak_mem = round(peak_mem / (1024 ** 2), 6)
+        elapsed_time = time.time() - start_time
+        ida_mem+=peak_mem
+        ida_time+=elapsed_time
+        print("IDA*:",elapsed_time,"memory usage:",peak_mem)
+
+
+
+        start_time = time.time()
+        print(bidirectional_astar_search(puzzles, h=puzzles.h, display=True))
+        elapsed_time = time.time() - start_time
+        bi_mem+=peak_mem
+        bi_time+=elapsed_time
+        print("Bidirectional A*:",elapsed_time,"\n")
+
+    print("A* time and memory:",astar_time/n,astar_mem/n)
+    print("IDA* time and memory:", ida_time / n, ida_mem / n)
+    print("Bidirectional A* time and memory:", bi_time / n, bi_mem / n)
+
+
+
 def user_input():
     # 1 2 3 4 5 6 7 0 8
     # 1 0 2 3 4 5 6 7 8
@@ -757,7 +801,7 @@ def user_input():
     return puzz
 
 
-puzzle = user_input()
+#puzzle = user_input()
 # print(puzzle.find_blank_square(state))
 
 # state, expanded = hill_climbing(puzzle)
@@ -770,5 +814,5 @@ puzzle = user_input()
 # print(state)
 
 # print(astar_search(puzzle, h=puzzle.manhattan, display=False))
-print(iterative_deepening_astar_search(puzzle, h=puzzle.manhattan))
+test_Astar()
 # print(bidirectional_astar_search(puzzle, h=puzzle.manhattan, display=False))
