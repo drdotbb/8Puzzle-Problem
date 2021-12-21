@@ -746,8 +746,8 @@ def test_Astar():
     bi_time=0
     bi_mem=0
     for i in range(n):
-        #puzzles = make_rand_8puzzle()
-        puzzles = make_rand_15puzzle()
+        puzzles = make_rand_8puzzle()
+        #puzzles = make_rand_15puzzle()
         k_list.append(puzzles)
 
         print("A* with Manhattan:")
