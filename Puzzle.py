@@ -627,7 +627,7 @@ def local_beam(problem):
     # not complete, not optimal
     # 1 2 3 4 5 0 6 7 8
     # local beam
-    k = 10
+    k = 10000
     expanded_states = 0
     k_list = []
     for i in range(k):
@@ -708,22 +708,22 @@ def test_hill_climbing():
 
     for puzzle in k_list:
         state, expanded_states = hill_climbing(puzzle)
-        # print(state)
+        print(state)
         if (puzzle.goal_test(state)):
             success_hill_climbing += 1
         expanded_states_hill_climbing += expanded_states
         print("finished 1")
 
-        # state, expanded_states = hill_climbing_random_restart(puzzle)
-        # success_hill_climbing_random_restart += 1
-        # expanded_states_hill_climbing_random_restart += expanded_states
-        # print("finished 2")
-        #
-        # state, expanded_states = hill_climbing_simulated_annealing(puzzle)
-        # print(state)
-        # success_hill_climbing_simulated_annealing += 1
-        # expanded_states_hill_climbing_simulated_annealing += expanded_states
-        # print("finished 3")
+        state, expanded_states = hill_climbing_random_restart(puzzle)
+        success_hill_climbing_random_restart += 1
+        expanded_states_hill_climbing_random_restart += expanded_states
+        print("finished 2")
+
+        state, expanded_states = hill_climbing_simulated_annealing(puzzle)
+        print(state)
+        success_hill_climbing_simulated_annealing += 1
+        expanded_states_hill_climbing_simulated_annealing += expanded_states
+        print("finished 3")
 
 
     print("hill climbing success: ", success_hill_climbing)
@@ -807,12 +807,13 @@ def user_input():
             Change here for random puzzle
         """
         puzz = make_rand_8puzzle()
-        # test_hill_climbing()
+        # puzz = make_rand_15puzzle()
+        test_hill_climbing()
     # print(puzz)
     return puzz
 
 
-#puzzle = user_input()
+puzzle = user_input()
 # print(puzzle.find_blank_square(state))
 
 # state, expanded = hill_climbing(puzzle)
@@ -825,5 +826,6 @@ def user_input():
 # print(state)
 
 # print(astar_search(puzzle, h=puzzle.manhattan, display=False))
-test_Astar()
+# print(iterative_deepening_astar_search(puzzle, h=puzzle.manhattan))
+# test_Astar()
 # print(bidirectional_astar_search(puzzle, h=puzzle.manhattan, display=False))
